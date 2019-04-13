@@ -14,6 +14,8 @@ class Flag:
         for rollout in Rollout.objects.filter(flag_name=self.name):
             subject: Subject = rollout.subject_instance
             identifier = subject.get_subject_identifier_for_request(request)
+            if not identifier:
+                continue
             score = identifier.get_flag_score(self.name)
             if score < rollout.enable_fraction:
                 return True
