@@ -1,5 +1,1 @@
-django
-pytest
-mockito
-dataclasses
-pytest-django
+-e .[test]
