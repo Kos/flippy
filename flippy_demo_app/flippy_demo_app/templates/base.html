@@ -1,0 +1,11 @@
+<!DOCTYPE html>
+<h1>Flippy Demo</h1>
+<p>
+    You are <b>{{ request.user }}.</b>
+    {% if request.user.is_authenticated %}
+      <a href="{% url 'logout' %}">Log out</a>
+    {% else %}
+      <a href="{% url 'login' %}">Log in</a>
+    {% endif %}
+</p>
+{% block content %} {% endblock %}
