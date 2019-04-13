@@ -50,3 +50,19 @@ def test_flag_respects_null_identifier():
         flag_name=f.name, enable_percentage=100, subject="flippy.subject.UserSubject"
     )
     assert f.get_state_for_request(request_factory()) is False
+
+
+def test_zero_rollout_overrides_default():
+    f = Flag("hello", default=True)
+    Rollout.objects.create(
+        flag_name=f.name, enable_percentage=0, subject="flippy.subject.IpAddressSubject"
+    )
+    assert f.get_state_for_request(request_factory()) is False
+
+
+def test_zero_rollout_doesnt_override_default_with_null_identifier():
+    f = Flag("hello", default=True)
+    Rollout.objects.create(
+        flag_name=f.name, enable_percentage=0, subject="flippy.subject.UserSubject"
+    )
+    assert f.get_state_for_request(request_factory()) is True

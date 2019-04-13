@@ -17,6 +17,5 @@ class Flag:
             if not identifier:
                 continue
             score = identifier.get_flag_score(self.name)
-            if score < rollout.enable_fraction:
-                return True
+            return score < rollout.enable_fraction
         return self.default
