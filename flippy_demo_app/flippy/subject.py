@@ -29,3 +29,15 @@ class IpAddressSubject(Subject):
     ) -> Optional[SubjectIdentifier]:
         ip = request.META.get("REMOTE_ADDR")
         return SubjectIdentifier(self.subject_class, ip) if ip else None
+
+
+class UserSubject(Subject):
+    def get_subject_identifier_for_request(
+        self, request: HttpRequest
+    ) -> Optional[SubjectIdentifier]:
+        user = request.user
+        return (
+            SubjectIdentifier(self.subject_class, str(user.pk))
+            if user.is_authenticated
+            else None
+        )
