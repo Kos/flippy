@@ -1,21 +1,21 @@
-from .subject import Subject
-
-
 class Flag:
     def __init__(self, name, default=False):
         self.name = name
         self.default = default
 
-    def get_state_for_request(self, request):
+    def get_state_for_request(self, request) -> bool:
         # Note: Flag is exported in __init__.py,
         # -> don't import models at import time
         from .models import Rollout
 
-        for rollout in Rollout.objects.filter(flag_name=self.name):
-            subject: Subject = rollout.subject_instance
-            identifier = subject.get_subject_identifier_for_request(request)
-            if not identifier:
-                continue
-            score = identifier.get_flag_score(self.name)
-            return score < rollout.enable_fraction
+        matching_rollouts = Rollout.objects.filter(flag_name=self.name)
+        return self._get_first_rollout_value(request, matching_rollouts)
+
+    def _get_first_rollout_value(self, request, rollouts) -> bool:
+        for rollout in rollouts:
+            maybe_value = rollout.get_flag_value_for_request(request)
+            if maybe_value is not None:
+                return maybe_value
+            # Otherwise, ignore the particular rollout - it doesn't match the request.
+
         return self.default
