@@ -1,7 +1,6 @@
 from .flag import Flag
-from django.http import HttpRequest
+from .test_utils import request_factory
 import pytest
-from mockito import mock
 
 
 def test_flag_has_name():
@@ -9,11 +8,6 @@ def test_flag_has_name():
     assert f.name == "hello"
 
 
-def test_flag_is_always_false(request):
+def test_flag_is_always_false():
     f = Flag("hello")
-    assert f.get_state_for_request(request) is False
-
-
-@pytest.fixture
-def request():
-    return mock(HttpRequest)
+    assert f.get_state_for_request(request_factory()) is False
