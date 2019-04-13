@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from abc import ABC, abstractmethod
 from django.http import HttpRequest
+from typing import Optional
 
 
 @dataclass
@@ -13,7 +14,7 @@ class Subject(ABC):
     @abstractmethod
     def get_subject_identifier_for_request(
         self, request: HttpRequest
-    ) -> SubjectIdentifier:
+    ) -> Optional[SubjectIdentifier]:
         ...
 
     @property
@@ -25,6 +26,6 @@ class Subject(ABC):
 class IpAddressSubject(Subject):
     def get_subject_identifier_for_request(
         self, request: HttpRequest
-    ) -> SubjectIdentifier:
-        ip = request.META["REMOTE_ADDR"]
-        return SubjectIdentifier(self.subject_class, ip)
+    ) -> Optional[SubjectIdentifier]:
+        ip = request.META.get("REMOTE_ADDR")
+        return SubjectIdentifier(self.subject_class, ip) if ip else None

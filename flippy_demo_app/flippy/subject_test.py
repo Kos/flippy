@@ -10,16 +10,30 @@ def test_subject_identifier():
     assert identifier.subject_id == "123"
 
 
-def test_ip_address_subject(request):
-    assert IpAddressSubject().get_subject_identifier_for_request(
-        request
-    ) == SubjectIdentifier("flippy.subject.IpAddressSubject", example_ip)
+@pytest.mark.parametrize(
+    ["ip", "expected_identifier"],
+    [
+        (
+            "10.20.30.40",
+            SubjectIdentifier("flippy.subject.IpAddressSubject", "10.20.30.40"),
+        ),
+        (
+            "40.30.20.10",
+            SubjectIdentifier("flippy.subject.IpAddressSubject", "40.30.20.10"),
+        ),
+        (None, None),
+    ],
+)
+def test_ip_address_subject(ip, expected_identifier):
+    assert (
+        IpAddressSubject().get_subject_identifier_for_request(request(ip))
+        == expected_identifier
+    )
 
 
-@pytest.fixture
-def request():
-    spec = {"META": {"REMOTE_ADDR": example_ip}}
+def request(ip="10.1.2.3"):
+    spec = {"META": {}}
+    if ip:
+        spec["META"]["REMOTE_ADDR"] = ip
     return mock(spec, HttpRequest)
 
-
-example_ip = "10.1.2.3"
