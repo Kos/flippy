@@ -2,3 +2,4 @@ django
 pytest
 mockito
 dataclasses
+pytest-django

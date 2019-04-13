@@ -116,3 +116,5 @@ STATIC_URL = "/static/"
 
 LOGIN_REDIRECT_URL = "/"
 LOGOUT_REDIRECT_URL = "/"
+
+FLIPPY_SUBJECTS = ["flippy.subject.IpAddressSubject", "flippy.subject.UserSubject"]

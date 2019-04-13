@@ -1,6 +1,5 @@
 from .flag import Flag
 from .test_utils import request_factory
-import pytest
 
 
 def test_flag_has_name():

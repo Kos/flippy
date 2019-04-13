@@ -1,11 +1,12 @@
 from mockito import mock
 from django.http import HttpRequest
 
+from django.contrib.auth.models import User, AnonymousUser
+
 
 def request_factory(ip="10.1.2.3", user=None):
     if user is None:
-        # user = AnonymomusUser() - would be better, but requires Django setup
-        user = anonymous_user_factory()
+        user = AnonymousUser()
     spec = {"META": {}, "user": user}
     if ip:
         spec["META"]["REMOTE_ADDR"] = ip
@@ -14,10 +15,4 @@ def request_factory(ip="10.1.2.3", user=None):
 
 def user_factory(pk):
     spec = {"pk": pk, "is_authenticated": True, "is_anonymous": False}
-    return mock(spec, strict=True)
-
-
-def anonymous_user_factory():
-    spec = {"is_authenticated": False, "is_anonymous": True}
-    return mock(spec, strict=True)
-
+    return mock(spec, User)
