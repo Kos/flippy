@@ -4,12 +4,38 @@ from django.http import HttpRequest
 from typing import Optional, Sequence
 import importlib
 from .exceptions import ConfigurationError
+import hashlib
 
 
 @dataclass
 class SubjectIdentifier:
     subject_class: str
     subject_id: str
+
+    def get_flag_score(self, flag_name: str) -> float:
+        """
+        Given a flag name, roll the dice and determine a number in range [0, 1)
+        that describes the probability if this particular subject instance should have the flag enabled.
+
+        Deterministic.
+        """
+        m = hashlib.sha256()
+        assert m.digest_size == 32
+        delimiter = b"\0\0\0\0Cookies!\3\2\1\0"
+        m.update(self.subject_class.encode())
+        m.update(delimiter)
+        m.update(self.subject_id.encode())
+        m.update(delimiter)
+        m.update(flag_name.encode())
+        digest = m.digest()
+        step = 4
+        word = 0
+        for i in range(0, m.digest_size, step):
+            digest_part = digest[i : i + step]
+            word ^= int.from_bytes(digest_part, "little")
+        fraction = word / (1 << (8 * step))
+        assert 0 <= fraction < 1
+        return fraction
 
 
 class Subject(ABC):

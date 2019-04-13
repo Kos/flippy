@@ -1,6 +1,8 @@
 from .subject import Subject, IpAddressSubject, UserSubject, SubjectIdentifier
 from .test_utils import request_factory, user_factory
 from .exceptions import ConfigurationError
+from random import Random
+from pathlib import Path
 import pytest
 
 
@@ -8,6 +10,21 @@ def test_subject_identifier():
     identifier = SubjectIdentifier(subject_class="hello", subject_id="123")
     assert identifier.subject_class == "hello"
     assert identifier.subject_id == "123"
+
+
+def test_get_flag_score():
+    """get_flag_score should be deterministic"""
+    rng = Random(321321321)
+    ids = [f"id-{rng.randint(0, 9999999)}" for _ in range(100)]
+    actual_scores = [
+        SubjectIdentifier("someclass", subject_id).get_flag_score("someflag")
+        for subject_id in ids
+    ]
+    expected_scores_path = Path(__file__).parent / "expected_scores.txt"
+    expected_scores = [
+        float(row) for row in expected_scores_path.read_text().splitlines()
+    ]
+    assert expected_scores == actual_scores
 
 
 @pytest.mark.parametrize(
