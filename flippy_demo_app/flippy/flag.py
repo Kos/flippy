@@ -8,7 +8,9 @@ class Flag:
         # -> don't import models at import time
         from .models import Rollout
 
-        matching_rollouts = Rollout.objects.filter(flag_name=self.name)
+        matching_rollouts = Rollout.objects.filter(flag_name=self.name).order_by(
+            "-create_date"
+        )
         return self._get_first_rollout_value(request, matching_rollouts)
 
     def _get_first_rollout_value(self, request, rollouts) -> bool:

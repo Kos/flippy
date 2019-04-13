@@ -2,6 +2,7 @@ from django.db import models
 from django.core.validators import MaxValueValidator, MinValueValidator
 from .subject import Subject, import_and_instantiate_subject
 from typing import Optional
+from datetime import datetime
 
 
 class Rollout(models.Model):
@@ -12,6 +13,7 @@ class Rollout(models.Model):
         validators=[MinValueValidator(0), MaxValueValidator(100)]
     )
     subject: str = models.TextField(choices=Subject.choices())
+    create_date: datetime = models.DateTimeField(auto_now_add=True)
 
     @property
     def enable_fraction(self):
