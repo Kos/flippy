@@ -1,7 +1,11 @@
+flag_registry = []
+
+
 class Flag:
     def __init__(self, name, default=False):
         self.name = name
         self.default = default
+        flag_registry.append(self)
 
     def get_state_for_request(self, request) -> bool:
         # Note: Flag is exported in __init__.py,
@@ -21,3 +25,9 @@ class Flag:
             # Otherwise, ignore the particular rollout - it doesn't match the request.
 
         return self.default
+
+
+class FlagChoices:
+    def __iter__(self):
+        for flag in sorted(flag_registry, key=lambda flag: flag.name):
+            yield (flag.name, flag.name)

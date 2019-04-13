@@ -17,7 +17,7 @@ class Migration(migrations.Migration):
             name='Rollout',
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('flag_name', models.CharField(max_length=64)),
+                ('flag_name', models.CharField(choices=[('bar', 'bar'), ('foo', 'foo')], max_length=64)),
                 ('subject', models.TextField(choices=[('flippy.subject.IpAddressSubject', 'IP address'), ('flippy.subject.UserSubject', 'User')])),
                 ('enable_percentage', models.FloatField(default=100, validators=[django.core.validators.MinValueValidator(0), django.core.validators.MaxValueValidator(100)])),
                 ('create_date', models.DateTimeField(auto_now_add=True)),
