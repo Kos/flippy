@@ -25,9 +25,3 @@ class Flag:
             # Otherwise, ignore the particular rollout - it doesn't match the request.
 
         return self.default
-
-
-class FlagChoices:
-    def __iter__(self):
-        for flag in sorted(flag_registry, key=lambda flag: flag.name):
-            yield (flag.name, flag.name)

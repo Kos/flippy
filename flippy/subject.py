@@ -59,17 +59,6 @@ class Subject(ABC):
             results.append(import_and_instantiate_subject(path))
         return results
 
-    @classmethod
-    def choices(cls):
-        """Returns a django-friendly iterable of choices."""
-        return SubjectChoices()
-
-
-class SubjectChoices:
-    def __iter__(self):
-        for subject in Subject.get_installed_subjects():
-            yield (subject.subject_class, str(subject))
-
 
 def import_and_instantiate_subject(path):
     module, _, name = path.rpartition(".")

@@ -1,17 +1,17 @@
-from django.db import models
-from django.core.validators import MaxValueValidator, MinValueValidator
-
-from flippy.flag import FlagChoices
-from .subject import Subject, import_and_instantiate_subject
-from typing import Optional
 from datetime import datetime
+from typing import Optional
+
+from django.core.validators import MaxValueValidator, MinValueValidator
+from django.db import models
+
+from .subject import import_and_instantiate_subject
 
 
 class Rollout(models.Model):
     """A Rollout is what happens when someone changes the value of a flag."""
 
-    flag_name: str = models.CharField(max_length=64, choices=FlagChoices())
-    subject: str = models.TextField(choices=Subject.choices())
+    flag_name: str = models.CharField(max_length=64)
+    subject: str = models.TextField()
     enable_percentage: float = models.FloatField(
         default=100,
         validators=[MinValueValidator(0), MaxValueValidator(100)]
