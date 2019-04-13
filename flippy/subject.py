@@ -12,7 +12,7 @@ class SubjectIdentifier:
     subject_class: str
     subject_id: str
 
-    def get_flag_score(self, flag_name: str) -> float:
+    def get_flag_score(self, flag_id: str) -> float:
         """
         Given a flag name, roll the dice and determine a number in range [0, 1)
         that describes the probability if this particular subject instance should have the flag enabled.
@@ -26,7 +26,7 @@ class SubjectIdentifier:
         m.update(delimiter)
         m.update(self.subject_id.encode())
         m.update(delimiter)
-        m.update(flag_name.encode())
+        m.update(flag_id.encode())
         digest = m.digest()
         step = 4
         word = 0

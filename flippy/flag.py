@@ -2,8 +2,9 @@ flag_registry = []
 
 
 class Flag:
-    def __init__(self, name, default=False):
-        self.name = name
+    def __init__(self, id: str, name: str = None, default=False):
+        self.id = id
+        self.name = name or id.title()
         self.default = default
         flag_registry.append(self)
 
@@ -12,7 +13,7 @@ class Flag:
         # -> don't import models at import time
         from .models import Rollout
 
-        matching_rollouts = Rollout.objects.filter(flag_name=self.name).order_by(
+        matching_rollouts = Rollout.objects.filter(flag_id=self.id).order_by(
             "-create_date"
         )
         return self._get_first_rollout_value(request, matching_rollouts)
