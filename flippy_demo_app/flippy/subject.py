@@ -33,6 +33,17 @@ class Subject(ABC):
             results.append(import_and_instantiate_subject(path))
         return results
 
+    @classmethod
+    def choices(cls):
+        """Returns a django-friendly iterable of choices."""
+        return SubjectChoices()
+
+
+class SubjectChoices:
+    def __iter__(self):
+        for subject in Subject.get_installed_subjects():
+            yield (subject.subject_class, str(subject))
+
 
 def import_and_instantiate_subject(path):
     module, _, name = path.rpartition(".")
@@ -52,6 +63,9 @@ class IpAddressSubject(Subject):
         ip = request.META.get("REMOTE_ADDR")
         return SubjectIdentifier(self.subject_class, ip) if ip else None
 
+    def __str__(self):
+        return "IP address"
+
 
 class UserSubject(Subject):
     def get_subject_identifier_for_request(
@@ -63,3 +77,6 @@ class UserSubject(Subject):
             if user.is_authenticated
             else None
         )
+
+    def __str__(self):
+        return "User"

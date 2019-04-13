@@ -72,3 +72,14 @@ def test_get_installed_subjects(settings, names, match):
     setattr(settings, "FLIPPY_SUBJECTS", names)
     with pytest.raises(ConfigurationError, match=match):
         Subject.get_installed_subjects()
+
+
+def test_subject_choices(settings):
+    settings.FLIPPY_SUBJECTS = [
+        "flippy.subject.UserSubject",
+        "flippy.subject.IpAddressSubject",
+    ]
+    assert list(Subject.choices()) == [
+        ("flippy.subject.UserSubject", "User"),
+        ("flippy.subject.IpAddressSubject", "IP address"),
+    ]
