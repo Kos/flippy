@@ -9,10 +9,11 @@ class Rollout(models.Model):
     """A Rollout is what happens when someone changes the value of a flag."""
 
     flag_name: str = models.CharField(max_length=64)
+    subject: str = models.TextField(choices=Subject.choices())
     enable_percentage: float = models.FloatField(
+        default=100,
         validators=[MinValueValidator(0), MaxValueValidator(100)]
     )
-    subject: str = models.TextField(choices=Subject.choices())
     create_date: datetime = models.DateTimeField(auto_now_add=True)
 
     @property
