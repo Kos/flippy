@@ -1,5 +1,6 @@
-from .subject import IpAddressSubject, UserSubject, SubjectIdentifier
+from .subject import Subject, IpAddressSubject, UserSubject, SubjectIdentifier
 from .test_utils import request_factory, user_factory
+from .exceptions import ConfigurationError
 import pytest
 
 
@@ -43,3 +44,31 @@ def test_user_subject(user, expected_identifier):
         UserSubject().get_subject_identifier_for_request(request_factory(user=user))
         == expected_identifier
     )
+
+
+@pytest.mark.parametrize(
+    "names",
+    [
+        [],
+        ["flippy.subject.UserSubject"],
+        ["flippy.subject.IpAddressSubject"],
+        ["flippy.subject.IpAddressSubject", "flippy.subject.UserSubject"],
+    ],
+)
+def test_get_installed_subjects(settings, names):
+    setattr(settings, "FLIPPY_SUBJECTS", names)
+    assert [x.subject_class for x in Subject.get_installed_subjects()] == names
+
+
+@pytest.mark.parametrize(
+    "names, match",
+    [
+        (["flippy.this.does.not.exist"], "No module named 'flippy.this'"),
+        (["flippy.subject.DoesNotExist"], "has no attribute 'DoesNotExist'"),
+        (["flippy.subject.Subject"], "Can't instantiate abstract class"),
+    ],
+)
+def test_get_installed_subjects(settings, names, match):
+    setattr(settings, "FLIPPY_SUBJECTS", names)
+    with pytest.raises(ConfigurationError, match=match):
+        Subject.get_installed_subjects()
