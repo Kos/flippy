@@ -28,6 +28,10 @@ class RolloutForm(forms.ModelForm):
 
 class RolloutAdmin(admin.ModelAdmin):
     form = RolloutForm
+    list_display = ['flag_name', 'subject_name', 'enable_percentage']
+
+    def subject_name(self, rollout):
+        return str(rollout.subject_obj)
 
 
 admin.site.register(Rollout, RolloutAdmin)

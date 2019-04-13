@@ -30,9 +30,14 @@ class Rollout(models.Model):
 
         Returns None in case the request doesn't match the rollout's subject.
         """
-        subject = import_and_instantiate_subject(self.subject)
+        subject = self.subject_obj
         identifier = subject.get_subject_identifier_for_request(request)
         if not identifier:
             return None
         score = identifier.get_flag_score(self.flag_name)
         return score < self.enable_fraction
+
+    @property
+    def subject_obj(self):
+        subject = import_and_instantiate_subject(self.subject)
+        return subject
