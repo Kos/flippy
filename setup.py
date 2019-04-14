@@ -13,7 +13,7 @@ setup(
     version='0.1',
     packages=['flippy'],
     include_package_data=True,
-    license='BSD License',
+    license='ISC',
     description='A flexible feature flipper, simple to configure',
     long_description=README,
     url='https://github.com/kos/flippy/',
