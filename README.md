@@ -1,28 +1,43 @@
 # Flippy - a feature flipper for Django
 
+Flippy gives you a simple way to add [feature flags](https://martinfowler.com/articles/feature-toggles.html) to your Django application using a simple syntax:
+
+```python
+# define a flag
+flag_enable_chat = Flag(id="chat", name="Enable the chat feature")
+
+# check the flag value for a specific user
+chat_enabled = flag_enable_chat.get_state_for_request(request)	
+if chat_enabled:
+    ...
+```
+
+The flags are defined in code and enabled for specific groups of users via Django Admin.
+
 ## Concepts
 
-- A **Flag** is a parameter that controls if a feature should be enabled to users. For example, if you're adding chat to your application, you can have a flag `enable_chat`.
+- A **Flag** is a parameter that controls if a feature should be enabled for users. For example, if you're adding chat to your application, you can hide it behind a flag `enable_chat`.
 - **Rollout** is the process of enabling features for your users. For example, you might want to have `enable_chat` initially equal `False` for everyone, then enable it for a group of beta-testers, then if nothing explodes - roll it out to 25% of users, then 50% users and finally for everyone!
-- A **Subject** is an individual or a group that for whom you'd like to enable flags. Depending on your case, you may want to enable a flag for some subset of:
-  - Django users,
-  - all anonymous users based on their IP,
-  - only users on a specific subscription plan...
+- A **Subject** is an individual or a group that for whom you'd like to enable the feature flags. Depending on your case, you may want to enable a feature flag for...
+  - all users
+  - some percentage of users (progressive rollout)
+  - a percentage of anonymous visitors (based on their IP address)
+  - all users that fit some criteria (permissions, subscription plan...)
 
 ## Quick start
 
 1. Install `flippy` in your app:
 
 ```bash
-pip install flippy
+pip install git+https://github.com/kos/flippy.git@master
 ```
 
 2. Add `flippy` to your `INSTALLED_APPS` setting:
 
 ```python
 INSTALLED_APPS = [
-...
-'flippy',
+	...
+	'flippy',
 ]
 ```
 
@@ -42,16 +57,15 @@ flag_enable_chat = Flag(id="chat", name="Enable the chat feature")
 from .flags import flag_enable_chat
 
 def some_page(request):
-chat_enabled = flag_enable_chat.get_state_for_request(request)
-if chat_enabled:
-...
+	chat_enabled = flag_enable_chat.get_state_for_request(request)
+	if chat_enabled:
+		...
 ```
 
-Now the flag will be always disabled:
+Now the flag is defined, but it will be always disabled.
 
 6. Visit the Django Admin in http://localhost:8000/admin/flippy/rollout/ and create a new rollout for this flag to enable it locally.
 
-7. If you'd like to disable this flag later, the simplest way is to create a new rollout that sets the percentage to zero. This way you preserve the history when the flag has been enabled and when it was disabled. Alternatively, you can edit the previous rollout in-place or delete it.
 
 ## Writing flags
 
@@ -124,11 +138,6 @@ FLIPPY_SUBJECTS = [
 
 Of course you're not limited to users. If your application features multi-user Accounts, you can use the same approach and write an `Account` subject. In that case, the function should return a group ID instead of user ID.
 
-## Percentage-based rollout
+## Status
 
-- ... TODO: describe how it works
-
-
-## Parametrized subjects
-
-- ... TODO: implement, describe how it works
+**Alpha**. You mileage may vary, things may and will break or change in future versions. I'm gathering feedback, so please try it out, open issues and describe what's broken or missing.
