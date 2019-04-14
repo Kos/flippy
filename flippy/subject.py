@@ -40,15 +40,8 @@ class SubjectIdentifier:
 
 class Subject(ABC):
     @abstractmethod
-    def get_subject_identifier_for_request(
-        self, request: HttpRequest
-    ) -> Optional[SubjectIdentifier]:
+    def get_identifier_for_request(self, request: HttpRequest) -> Optional[str]:
         ...
-
-    @property
-    def subject_class(self):
-        cls = type(self)
-        return cls.__module__ + "." + cls.__name__
 
     @classmethod
     def get_installed_subjects(cls) -> Sequence["Subject"]:
@@ -58,6 +51,11 @@ class Subject(ABC):
         for path in settings.FLIPPY_SUBJECTS:
             results.append(import_and_instantiate_subject(path))
         return results
+
+    @property
+    def subject_class(self):
+        cls = type(self)
+        return cls.__module__ + "." + cls.__name__
 
 
 def import_and_instantiate_subject(path):
@@ -72,26 +70,17 @@ def import_and_instantiate_subject(path):
 
 
 class IpAddressSubject(Subject):
-    def get_subject_identifier_for_request(
-        self, request: HttpRequest
-    ) -> Optional[SubjectIdentifier]:
-        ip = request.META.get("REMOTE_ADDR")
-        return SubjectIdentifier(self.subject_class, ip) if ip else None
+    def get_identifier_for_request(self, request: HttpRequest) -> Optional[str]:
+        return request.META.get("REMOTE_ADDR")
 
     def __str__(self):
         return "IP address"
 
 
 class UserSubject(Subject):
-    def get_subject_identifier_for_request(
-        self, request: HttpRequest
-    ) -> Optional[SubjectIdentifier]:
+    def get_identifier_for_request(self, request: HttpRequest) -> Optional[str]:
         user = request.user
-        return (
-            SubjectIdentifier(self.subject_class, str(user.pk))
-            if user.is_authenticated
-            else None
-        )
+        return str(user.pk) if user.is_authenticated else None
 
     def __str__(self):
         return "User"

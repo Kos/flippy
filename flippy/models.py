@@ -5,7 +5,7 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
 from flippy.flag import flag_registry
-from .subject import import_and_instantiate_subject
+from .subject import import_and_instantiate_subject, SubjectIdentifier
 
 
 class Rollout(models.Model):
@@ -30,12 +30,18 @@ class Rollout(models.Model):
 
         Returns None in case the request doesn't match the rollout's subject.
         """
-        subject = self.subject_obj
-        identifier = subject.get_subject_identifier_for_request(request)
+        identifier = self._build_identifier(request)
         if not identifier:
             return None
         score = identifier.get_flag_score(self.flag_id)
         return score < self.enable_fraction
+
+    def _build_identifier(self, request) -> Optional[SubjectIdentifier]:
+        subject = self.subject_obj
+        subject_id = subject.get_identifier_for_request(request)
+        if subject_id is None:
+            return None
+        return SubjectIdentifier(subject.subject_class, subject_id)
 
     @property
     def subject_obj(self):

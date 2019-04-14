@@ -27,38 +27,18 @@ def test_get_flag_score():
     assert expected_scores == actual_scores
 
 
-@pytest.mark.parametrize(
-    ["ip", "expected_identifier"],
-    [
-        (
-            "10.20.30.40",
-            SubjectIdentifier("flippy.subject.IpAddressSubject", "10.20.30.40"),
-        ),
-        (
-            "40.30.20.10",
-            SubjectIdentifier("flippy.subject.IpAddressSubject", "40.30.20.10"),
-        ),
-        (None, None),
-    ],
-)
-def test_ip_address_subject(ip, expected_identifier):
-    assert (
-        IpAddressSubject().get_subject_identifier_for_request(request_factory(ip=ip))
-        == expected_identifier
-    )
+@pytest.mark.parametrize("ip", ["10.20.30.40", "40.30.20.10", None])
+def test_ip_address_subject(ip):
+    assert IpAddressSubject().get_identifier_for_request(request_factory(ip=ip)) == ip
 
 
 @pytest.mark.parametrize(
     ["user", "expected_identifier"],
-    [
-        (user_factory(pk=42), SubjectIdentifier("flippy.subject.UserSubject", "42")),
-        (user_factory(pk=25), SubjectIdentifier("flippy.subject.UserSubject", "25")),
-        (None, None),
-    ],
+    [(user_factory(pk=42), "42"), (user_factory(pk=25), "25"), (None, None)],
 )
 def test_user_subject(user, expected_identifier):
     assert (
-        UserSubject().get_subject_identifier_for_request(request_factory(user=user))
+        UserSubject().get_identifier_for_request(request_factory(user=user))
         == expected_identifier
     )
 
