@@ -1,0 +1,16 @@
+version: 0.0.{build}
+
+image: Ubuntu1804
+
+# init:
+
+install:
+  - pip install -r requirements.txt
+
+build: off
+
+test_script:
+  - pytest .
+
+
+deploy: off
