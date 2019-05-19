@@ -1,4 +1,6 @@
-from typing import Any, TYPE_CHECKING, Iterable
+from typing import Any, TYPE_CHECKING, Iterable, Union
+
+from django.http import HttpRequest
 
 if TYPE_CHECKING:
     from .models import Rollout
@@ -13,7 +15,20 @@ class Flag:
         self.default = default
         flag_registry.append(self)
 
-    def get_value(self, obj: Any) -> bool:
+    def get_value(self, obj: Union[HttpRequest, Any]) -> bool:
+        """
+        Returns the current value of this flag for a given object.
+
+        The flag value will depend on:
+        - the object itself
+        - the Rollouts that currently exist in the database
+        - the flag's default value (if there are no rollouts)
+
+        `get_value` can be called with:
+        - an HttpRequest instance - in this case any rollout can apply,
+        -
+
+        """
         # Note: Flag is exported in __init__.py,
         # -> don't import models at import time
         from .models import Rollout

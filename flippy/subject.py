@@ -106,3 +106,19 @@ class UserSubject(Subject):
 
     def __str__(self):
         return "User"
+
+
+class AccountSubject(TypedSubject[User, Account]):
+    def get_identifier_for_request(self, request: HttpRequest) -> Optional[str]:
+        if request.user.is_authenticated:
+            return self.get_identifier_for_object(request.user)
+        return None
+
+    def get_identifier_for_object(self, obj: Union[User, Account]) -> Optional[str]:
+        if isinstance(obj, Account):
+            return str(account.pk)
+        elif isinstance(obj, User):
+            return str(user.account.pk)
+
+    def __str__(self):
+        return "User"
