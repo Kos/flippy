@@ -19,17 +19,19 @@ class Flag:
         flag_registry.append(self)
 
     def get_state_for_request(self, request: HttpRequest) -> bool:
+        return self._get_first_rollout_value(request)
+
+    def _get_first_rollout_value(self, obj: Any) -> bool:
         # Note: Flag is exported in __init__.py,
         # -> don't import models at import time
+
         from .models import Rollout
 
         matching_rollouts = Rollout.objects.filter(flag_id=self.id).order_by(
             "-create_date"
         )
-        return self._get_first_rollout_value(request, matching_rollouts)
 
-    def _get_first_rollout_value(self, obj: Any, rollouts: Iterable["Rollout"]) -> bool:
-        for rollout in rollouts:
+        for rollout in matching_rollouts:
             maybe_value = rollout.get_flag_value(obj)
             if maybe_value is not None:
                 return maybe_value
@@ -40,10 +42,6 @@ class Flag:
 
 class TypedFlag(Flag, Generic[T]):
     def get_state_for_object(self, obj: T) -> bool:
-        # Note: Flag is exported in __init__.py,
-        # -> don't import models at import time
-        from .models import Rollout
-
         if not isinstance(obj, self._get_expected_type()):
             this_method_name = inspect.stack()[0].function
             expected_type_name = self._get_expected_type().__name__
@@ -53,10 +51,7 @@ class TypedFlag(Flag, Generic[T]):
                 f"with `{expected_type_name}` instances, not `{actual_type_name}`"
             )
 
-        matching_rollouts = Rollout.objects.filter(flag_id=self.id).order_by(
-            "-create_date"
-        )
-        return self._get_first_rollout_value(obj, matching_rollouts)
+        return self._get_first_rollout_value(obj)
 
     def _get_expected_type(self):
         # NOTE: TypingFlag is generic, but `type(TypedFlag[int](...))` will give you just `TypingFlag`,
