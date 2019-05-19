@@ -1,10 +1,12 @@
-from dataclasses import dataclass
-from abc import ABC, abstractmethod
-from django.http import HttpRequest
-from typing import Optional, Sequence
-import importlib
-from .exceptions import ConfigurationError
 import hashlib
+import importlib
+from abc import ABC, abstractmethod
+from typing import Optional, Sequence, Any
+
+from dataclasses import dataclass
+from django.http import HttpRequest
+
+from .exceptions import ConfigurationError
 
 
 @dataclass
@@ -43,6 +45,10 @@ class Subject(ABC):
     def get_identifier_for_request(self, request: HttpRequest) -> Optional[str]:
         ...
 
+    @abstractmethod
+    def get_identifier_for_object(self, obj: Any) -> Optional[str]:
+        ...
+
     @classmethod
     def get_installed_subjects(cls) -> Sequence["Subject"]:
         from django.conf import settings
@@ -73,13 +79,23 @@ class IpAddressSubject(Subject):
     def get_identifier_for_request(self, request: HttpRequest) -> Optional[str]:
         return request.META.get("REMOTE_ADDR")
 
+    def get_identifier_for_object(self, obj: Any) -> Optional[str]:
+        return None
+
     def __str__(self):
         return "IP address"
 
 
 class UserSubject(Subject):
     def get_identifier_for_request(self, request: HttpRequest) -> Optional[str]:
-        user = request.user
+        # noinspection PyUnresolvedReferences
+        return self.get_identifier_for_object(request.user)
+
+    def get_identifier_for_object(self, user: Any) -> Optional[str]:
+        from django.contrib.auth.models import AbstractUser
+
+        if not isinstance(user, AbstractUser):
+            return None
         return str(user.pk) if user.is_authenticated else None
 
     def __str__(self):
