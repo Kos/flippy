@@ -24,21 +24,21 @@ class Rollout(models.Model):
         assert 0 <= fraction <= 1
         return fraction
 
-    def get_flag_value_for_request(self, request) -> Optional[bool]:
+    def get_flag_value(self, obj) -> Optional[bool]:
         """
-        Returns the flag state assigned determined by this rollout to a given request.
+        Returns the flag state assigned determined by this rollout to a given object.
 
-        Returns None in case the request doesn't match the rollout's subject.
+        Returns None in case the object doesn't match the rollout's subject.
         """
-        identifier = self._build_identifier(request)
+        identifier = self._build_identifier(obj)
         if not identifier:
             return None
         score = identifier.get_flag_score(self.flag_id)
         return score < self.enable_fraction
 
-    def _build_identifier(self, request) -> Optional[SubjectIdentifier]:
+    def _build_identifier(self, obj) -> Optional[SubjectIdentifier]:
         subject = self.subject_obj
-        subject_id = subject.get_identifier_for_request(request)
+        subject_id = subject.get_identifier(obj)
         if subject_id is None:
             return None
         return SubjectIdentifier(subject.subject_class, subject_id)

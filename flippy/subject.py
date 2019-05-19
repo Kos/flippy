@@ -41,6 +41,12 @@ class SubjectIdentifier:
 
 
 class Subject(ABC):
+    def get_identifier(self, obj: Any):
+        if isinstance(obj, HttpRequest):
+            return self.get_identifier_for_request(obj)
+        else:
+            return self.get_identifier_for_object(obj)
+
     @abstractmethod
     def get_identifier_for_request(self, request: HttpRequest) -> Optional[str]:
         ...

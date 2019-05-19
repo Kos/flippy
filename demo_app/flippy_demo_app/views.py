@@ -8,7 +8,7 @@ def index(request):
         request,
         "index.html",
         {
-            "flag_foo": flag_foo.get_state_for_request(request),
-            "flag_bar": flag_bar.get_state_for_request(request),
+            "flag_foo": flag_foo.get_value(request),
+            "flag_bar": flag_bar.get_value(request),
         },
     )
