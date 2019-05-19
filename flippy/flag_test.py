@@ -1,12 +1,12 @@
-# from django.contrib.auth.models import User
-from django.contrib.auth.models import User
+import pytest
+from django.contrib.auth.models import User, AbstractUser
 from django.http import HttpRequest
 from pytest import raises
 
+from flippy.subject import IpAddressSubject, UserSubject
 from .flag import Flag, TypedFlag
-from .test_utils import request_factory
 from .models import Rollout
-import pytest
+from .test_utils import request_factory
 
 pytestmark = pytest.mark.django_db
 
@@ -120,3 +120,25 @@ def test_typed_flag_disallows_calling_with_unrelated_type(flag_type, arg_type):
         match=rf"`TypedFlag\.get_state_for_object\(\)` may only be called with `{flag_type.__name__}` instances",
     ):
         f.get_state_for_object(obj)
+
+
+def test_flag_accepts_any_subject():
+    f = Flag("hello")
+    assert f.accepts_subject(IpAddressSubject())
+    assert f.accepts_subject(UserSubject())
+
+
+@pytest.mark.parametrize(
+    "flag_type,subject_cls,expected",
+    [
+        (AbstractUser, UserSubject, True),
+        (AbstractUser, IpAddressSubject, False),
+        (User, UserSubject, True),
+        (User, IpAddressSubject, False),
+        (int, UserSubject, False),
+        (int, IpAddressSubject, False),
+    ],
+)
+def test_typed_flag_accepts_matching_subjects(flag_type, subject_cls, expected):
+    f = TypedFlag[flag_type]("hello")
+    assert f.accepts_subject(subject_cls()) is expected

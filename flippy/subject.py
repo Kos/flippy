@@ -71,6 +71,11 @@ class TypedSubject(Subject, Generic[T]):
     def get_identifier_for_object(self, obj: T) -> Optional[str]:
         ...
 
+    @abstractmethod
+    def is_supported_type(self, type) -> bool:
+        # TODO is it possible to make a generic implementation?
+        ...
+
 
 def import_and_instantiate_subject(path):
     module, _, name = path.rpartition(".")
@@ -98,6 +103,11 @@ class UserSubject(TypedSubject["AbstractUser"]):
 
     def get_identifier_for_object(self, user: "AbstractUser") -> Optional[str]:
         return str(user.pk)
+
+    def is_supported_type(self, type) -> bool:
+        from django.contrib.auth.models import AbstractUser
+
+        return issubclass(type, AbstractUser)
 
     def __str__(self):
         return "User"

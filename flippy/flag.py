@@ -1,7 +1,9 @@
 import inspect
-from typing import TypeVar, Generic, Iterable, TYPE_CHECKING, Any
+from typing import TypeVar, Generic, Iterable, TYPE_CHECKING, Any, GenericMeta
 
 from django.http import HttpRequest
+
+from .subject import Subject, TypedSubject
 
 if TYPE_CHECKING:
     from flippy.models import Rollout
@@ -52,6 +54,9 @@ class Flag:
 
         return self.default
 
+    def accepts_subject(self, subject: Subject):
+        return True
+
 
 class TypedFlag(Flag, Generic[T]):
     def get_state_for_object(self, obj: T) -> bool:
@@ -62,6 +67,11 @@ class TypedFlag(Flag, Generic[T]):
             )
 
         return self._get_first_rollout_value(obj)
+
+    def accepts_subject(self, subject: Subject):
+        return isinstance(subject, TypedSubject) and subject.is_supported_type(
+            self._get_expected_type()
+        )
 
     def _get_expected_type(self):
         # NOTE: TypingFlag is generic, but `type(TypedFlag[int](...))` will give you just `TypingFlag`,
