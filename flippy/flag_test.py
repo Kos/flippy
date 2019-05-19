@@ -1,4 +1,6 @@
-from .flag import Flag
+from django.contrib.auth.models import User
+
+from .flag import Flag, TypedFlag
 from .test_utils import request_factory
 from .models import Rollout
 import pytest
@@ -34,7 +36,7 @@ def test_flag_uses_rollout(percentage, result):
     assert f.get_state_for_request(request_factory()) is result
 
 
-def test_flag_uses_correct_rollout():
+def test_flag_ignores_other_rollout():
     f = Flag("hello")
     Rollout.objects.create(
         flag_id="hello2",
@@ -77,3 +79,10 @@ def test_flag_uses_latest_rollout():
         flag_id=f.id, enable_percentage=0, subject="flippy.subject.IpAddressSubject"
     )
     assert f.get_state_for_request(request_factory()) is False
+
+
+def test_typed_flag_allows_calling_with_object():
+    f: TypedFlag[User] = TypedFlag[User]("hello")
+    Rollout.objects.create(flag_id=f.id, subject="flippy.subject.UserSubject")
+    user = User()
+    assert f.get_state_for_object(user) is True
