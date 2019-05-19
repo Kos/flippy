@@ -1,10 +1,15 @@
-from dataclasses import dataclass
-from abc import ABC, abstractmethod
-from django.http import HttpRequest
-from typing import Optional, Sequence
-import importlib
-from .exceptions import ConfigurationError
 import hashlib
+import importlib
+from abc import ABC, abstractmethod
+from typing import Optional, Sequence, Generic, TypeVar, TYPE_CHECKING
+
+from dataclasses import dataclass
+from django.http import HttpRequest
+
+from .exceptions import ConfigurationError
+
+if TYPE_CHECKING:
+    from django.contrib.auth.models import AbstractUser
 
 
 @dataclass
@@ -58,6 +63,15 @@ class Subject(ABC):
         return cls.__module__ + "." + cls.__name__
 
 
+T = TypeVar("T")
+
+
+class TypedSubject(Subject, Generic[T]):
+    @abstractmethod
+    def get_identifier_for_object(self, obj: T) -> Optional[str]:
+        ...
+
+
 def import_and_instantiate_subject(path):
     module, _, name = path.rpartition(".")
     try:
@@ -77,10 +91,13 @@ class IpAddressSubject(Subject):
         return "IP address"
 
 
-class UserSubject(Subject):
+class UserSubject(TypedSubject["AbstractUser"]):
     def get_identifier_for_request(self, request: HttpRequest) -> Optional[str]:
         user = request.user
-        return str(user.pk) if user.is_authenticated else None
+        return self.get_identifier_for_object(user) if user.is_authenticated else None
+
+    def get_identifier_for_object(self, user: "AbstractUser") -> Optional[str]:
+        return str(user.pk)
 
     def __str__(self):
         return "User"
