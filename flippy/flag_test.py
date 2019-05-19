@@ -1,4 +1,7 @@
+# from django.contrib.auth.models import User
 from django.contrib.auth.models import User
+from django.http import HttpRequest
+from pytest import raises
 
 from .flag import Flag, TypedFlag
 from .test_utils import request_factory
@@ -86,3 +89,23 @@ def test_typed_flag_allows_calling_with_object():
     Rollout.objects.create(flag_id=f.id, subject="flippy.subject.UserSubject")
     user = User()
     assert f.get_state_for_object(user) is True
+
+
+def test_typed_flag_allows_calling_with_request():
+    f = TypedFlag[int]("hello")
+    Rollout.objects.create(flag_id=f.id, subject="flippy.subject.IpAddressSubject")
+    assert f.get_state_for_request(request_factory())
+
+
+@pytest.mark.parametrize(
+    "flag_type,arg_type",
+    [(int, User), (int, str), (User, str), (User, HttpRequest), (int, HttpRequest)],
+)
+def test_typed_flag_disallows_calling_with_unrelated_type(flag_type, arg_type):
+    obj = arg_type()
+    f = TypedFlag[flag_type]("hello")
+
+    with raises(
+        TypeError, match=f"may only be called with `{flag_type.__name__}` instances"
+    ):
+        f.get_state_for_object(obj)
