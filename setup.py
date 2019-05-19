@@ -40,6 +40,7 @@ setup(
         "test": [
             "pytest-django",
             "mockito",
+            "mypy",
         ]
     }
 )

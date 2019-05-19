@@ -2,3 +2,4 @@ env3
 __pycache__
 db.sqlite3
 flippy.egg-info
+/.mypy_cache
