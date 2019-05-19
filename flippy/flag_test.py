@@ -84,6 +84,16 @@ def test_flag_uses_latest_rollout():
     assert f.get_state_for_request(request_factory()) is False
 
 
+def test_flag_disallows_calling_with_unrelated_type():
+    f = Flag("hello")
+
+    with raises(
+        TypeError,
+        match=r"`Flag\.get_state_for_request\(\)` may only be called with `HttpRequest` instances",
+    ):
+        f.get_state_for_request("hello")
+
+
 def test_typed_flag_allows_calling_with_object():
     f: TypedFlag[User] = TypedFlag[User]("hello")
     Rollout.objects.create(flag_id=f.id, subject="flippy.subject.UserSubject")
@@ -106,6 +116,7 @@ def test_typed_flag_disallows_calling_with_unrelated_type(flag_type, arg_type):
     f = TypedFlag[flag_type]("hello")
 
     with raises(
-        TypeError, match=f"may only be called with `{flag_type.__name__}` instances"
+        TypeError,
+        match=rf"`TypedFlag\.get_state_for_object\(\)` may only be called with `{flag_type.__name__}` instances",
     ):
         f.get_state_for_object(obj)

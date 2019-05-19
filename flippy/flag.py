@@ -19,12 +19,25 @@ class Flag:
         flag_registry.append(self)
 
     def get_state_for_request(self, request: HttpRequest) -> bool:
+        if not isinstance(request, HttpRequest):
+            raise self._type_error(
+                actual_type_name=type(request).__name__,
+                expected_type_name=HttpRequest.__name__,
+            )
         return self._get_first_rollout_value(request)
+
+    def _type_error(self, actual_type_name: str, expected_type_name: str):
+        this_class_name = type(self).__name__
+        this_method_name = inspect.stack()[1].function
+        error = TypeError(
+            f"`{this_class_name}.{this_method_name}()` may only be called "
+            f"with `{expected_type_name}` instances, not `{actual_type_name}`"
+        )
+        return error
 
     def _get_first_rollout_value(self, obj: Any) -> bool:
         # Note: Flag is exported in __init__.py,
         # -> don't import models at import time
-
         from .models import Rollout
 
         matching_rollouts = Rollout.objects.filter(flag_id=self.id).order_by(
@@ -43,12 +56,9 @@ class Flag:
 class TypedFlag(Flag, Generic[T]):
     def get_state_for_object(self, obj: T) -> bool:
         if not isinstance(obj, self._get_expected_type()):
-            this_method_name = inspect.stack()[0].function
-            expected_type_name = self._get_expected_type().__name__
-            actual_type_name = type(obj).__name__
-            raise TypeError(
-                f"`{type(self).__name__}.{this_method_name}()` may only be called "
-                f"with `{expected_type_name}` instances, not `{actual_type_name}`"
+            raise self._type_error(
+                actual_type_name=type(obj).__name__,
+                expected_type_name=self._get_expected_type().__name__,
             )
 
         return self._get_first_rollout_value(obj)
