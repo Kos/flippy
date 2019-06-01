@@ -7,7 +7,7 @@ from django.db import models
 from django.http import HttpRequest
 
 from flippy import Flag
-from flippy.flag import flag_registry
+from flippy.flag import flag_registry, TypedFlag
 from .subject import import_and_instantiate_subject, SubjectIdentifier, TypedSubject
 
 
@@ -71,6 +71,7 @@ class Rollout(models.Model):
         flag = self.flag_obj
         subject = self.subject_obj
         if not flag.accepts_subject(subject):
-            raise ValidationError(
-                f"Flag `{flag.name}` is not complatible with subject {subject}"
-            )
+            message = f"Flag `{flag.name}` cannot be used with subject `{subject}`."
+            if isinstance(flag, TypedFlag):
+                message += f" It can only be used with subjects that support `{flag.expected_type.__name__}`."
+            raise ValidationError(message)

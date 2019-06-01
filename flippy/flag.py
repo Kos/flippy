@@ -1,5 +1,5 @@
 import inspect
-from typing import TypeVar, Generic, TYPE_CHECKING, Any
+from typing import TypeVar, Generic, TYPE_CHECKING, Any, Type
 
 from django.http import HttpRequest
 from django.utils.functional import LazyObject
@@ -64,20 +64,24 @@ class TypedFlag(Flag, Generic[T]):
             # Compatibility for `request.user`
             obj._setup()
             obj = obj._wrapped
-        if not isinstance(obj, self._get_expected_type()):
+        if not isinstance(obj, self.expected_type):
             raise self._type_error(
                 actual_type_name=type(obj).__name__,
-                expected_type_name=self._get_expected_type().__name__,
+                expected_type_name=self.expected_type.__name__,
             )
 
         return self._get_first_rollout_value(obj)
 
     def accepts_subject(self, subject: Subject):
         return isinstance(subject, TypedSubject) and subject.is_supported_type(
-            self._get_expected_type()
+            self.expected_type
         )
 
-    def _get_expected_type(self):
+    @property
+    def expected_type(self) -> Type:
+        """
+        Return the object type supported by this flag. This is the same type that is later expected in get_state_for_object().
+        """
         # NOTE: TypingFlag is generic, but `type(TypedFlag[int](...))` will give you just `TypingFlag`,
         # not `TypingFlag[int]` which we need here for further inspection.
         # Instead, the actual generic type `TypingFlag[T]` is accessible on the instance:
