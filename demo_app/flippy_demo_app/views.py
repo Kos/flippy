@@ -1,6 +1,6 @@
 from django.template.response import TemplateResponse
 
-from .flags import enable_weather, enable_cats
+from .flags import enable_weather, enable_cats, enable_sudoku
 
 
 def index(request):
@@ -10,5 +10,7 @@ def index(request):
         {
             "show_weather": enable_weather.get_state_for_request(request),
             "show_cat": enable_cats.get_state_for_request(request),
+            # TODO extract method
+            "show_sudoku": enable_sudoku.get_state_for_object(request.user),
         },
     )
