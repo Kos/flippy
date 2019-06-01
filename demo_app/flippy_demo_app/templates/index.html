@@ -1,9 +1,20 @@
 {% extends "base.html" %}
 {% block content %}
-<h1>Index page</h1>
-<h2>Flags</h2>
-<ul>
-  <li>Foo: {{ flag_foo }}</li>
-  <li>Bar: {{ flag_bar }}</li>
-</ul>
+  <h1>Index page</h1>
+
+  <p>This is a test site for Flippy feature flags. Try enabling some features by creating a new Rollout in <a href="{% url 'admin:flippy_rollout_add' %}">Django Admin.</a></p>
+
+  <h2>Weather</h2>
+  {% if show_weather %}
+    <p>☀ The weather sure is nice today. ☀</p>
+  {% else %}
+    <p>(feature disabled)</p>
+  {% endif %}
+
+  <h2>Cats</h2>
+  {% if show_cat %}
+    <img src="https://www.catster.com/wp-content/uploads/2016/05/doctor-who-cat-.jpg" alt="Doctor Who petting a cat">
+  {% else %}
+    <p>(feature disabled)</p>
+  {% endif %}
 {% endblock %}

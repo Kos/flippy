@@ -1,5 +1,11 @@
 <!DOCTYPE html>
 <h1>Flippy Demo</h1>
+<style>
+    body{
+        width: 40em;
+        margin: 0 auto;
+    }
+</style>
 <p>
     You are <b>{{ request.user }}.</b>
     {% if request.user.is_authenticated %}

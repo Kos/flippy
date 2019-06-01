@@ -1,5 +1,5 @@
 from flippy import Flag
 from django.conf import settings
 
-flag_foo = Flag("foo", "Foo")
-flag_bar = Flag("bar", "Bar", default=settings.DEBUG)
+enable_weather = Flag("enable_weather", "Weather widget")
+enable_cats = Flag("enable_cats", "Cats widget", default=settings.DEBUG)
