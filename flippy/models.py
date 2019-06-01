@@ -1,10 +1,12 @@
 from datetime import datetime
 from typing import Optional, Any
 
+from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.http import HttpRequest
 
+from flippy import Flag
 from flippy.flag import flag_registry
 from .subject import import_and_instantiate_subject, SubjectIdentifier, TypedSubject
 
@@ -58,9 +60,17 @@ class Rollout(models.Model):
         return str(self.subject_obj)
 
     @property
-    def flag_obj(self):
+    def flag_obj(self) -> Flag:
         return [f for f in flag_registry if f.id == self.flag_id][0]
 
     @property
     def flag_name(self):
         return self.flag_obj.name
+
+    def clean(self):
+        flag = self.flag_obj
+        subject = self.subject_obj
+        if not flag.accepts_subject(subject):
+            raise ValidationError(
+                f"Flag `{flag.name}` is not complatible with subject {subject}"
+            )
