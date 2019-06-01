@@ -1,7 +1,8 @@
 import inspect
-from typing import TypeVar, Generic, Iterable, TYPE_CHECKING, Any, GenericMeta
+from typing import TypeVar, Generic, TYPE_CHECKING, Any
 
 from django.http import HttpRequest
+from django.utils.functional import LazyObject
 
 from .subject import Subject, TypedSubject
 
@@ -59,6 +60,10 @@ class Flag:
 
 class TypedFlag(Flag, Generic[T]):
     def get_state_for_object(self, obj: T) -> bool:
+        if isinstance(obj, LazyObject):
+            # Compatibility for `request.user`
+            obj._setup()
+            obj = obj._wrapped
         if not isinstance(obj, self._get_expected_type()):
             raise self._type_error(
                 actual_type_name=type(obj).__name__,

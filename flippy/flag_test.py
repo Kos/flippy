@@ -1,6 +1,7 @@
 import pytest
 from django.contrib.auth.models import User, AbstractUser
 from django.http import HttpRequest
+from django.utils.functional import SimpleLazyObject
 from pytest import raises
 
 from flippy.subject import IpAddressSubject, UserSubject
@@ -98,6 +99,13 @@ def test_typed_flag_allows_calling_with_object():
     f: TypedFlag[User] = TypedFlag[User]("hello")
     Rollout.objects.create(flag_id=f.id, subject="flippy.subject.UserSubject")
     user = User()
+    assert f.get_state_for_object(user) is True
+
+
+def test_typed_flag_allows_calling_with_lazy_object():
+    f: TypedFlag[User] = TypedFlag[User]("hello")
+    Rollout.objects.create(flag_id=f.id, subject="flippy.subject.UserSubject")
+    user = SimpleLazyObject(lambda: User())
     assert f.get_state_for_object(user) is True
 
 
