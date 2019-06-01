@@ -148,6 +148,53 @@ FLIPPY_SUBJECTS = [
 
 Of course you're not limited to users. If your application features multi-user Accounts, you can use the same approach and write an `Account` subject. In that case, the function should return a group ID instead of user ID.
 
+## Advanced: Using Flags without a request
+
+Sometimes you need to query a feature flag somewhere deep in the code where you don't have access to the `request` variable, because:
+
+- you're in a context where the `request` is not accessible (like models or utils) and it's not practical to pass the value all the way from the view
+- you're writing a management command or a Celery task, so there's no request whatsoever
+
+This can be addressed using *typed flags*:
+
+```python
+enable_sudoku = TypedFlag[User]("enable_sudoku", "Sudoku")
+```
+
+A typed flag, in addition to querying by request, can also be queried with an object of its declared type:
+
+```python
+sudoku_enabled = enable_sudoku.get_state_for_object(user)
+```
+
+However, there's a limitation: a typed flag can only be rolled out for compatible subjects that match their type. This means that this flag can be rolled out to `flippy.subject.UserSubject"` but not `flippy.subject.IpAddressSubject`.
+
+Django Admin will forbid you from creating a mismatched Rollout.
+
+Here's an example custom Subject that could be used together with `TypedFlag[Account]` in order to roll features to a given percentage of Accounts (your example custom model):
+
+```python
+class AccountSubject(TypedSubject["Account"]):
+    def get_identifier_for_request(self, request: HttpRequest) -> Optional[str]:
+        user = request.user
+        if user.is_anonymous or user.account is None:
+            return None
+        return self.get_identifier_for_object(user.account)
+
+    def get_identifier_for_object(self, account) -> Optional[str]:
+        return str(account.pk)
+
+    def is_supported_type(self, type) -> bool:
+        from your_app import Account
+
+        return issubclass(type, Account)
+
+    def __str__(self):
+        return "Accounts"
+```
+
+Note that in this case, in addition to `get_identifier_for_request` you also need to implement `get_identifier_for_object`. It's convenient to define one in terms of the other. The method `is_supported_type` is required for validation (so that Flippy can ensure the subject will be only used with matching flags).
+
 ## Status
 
 **Alpha**. You mileage may vary, things may and will break. The API can change in future versions. I'm gathering feedback, so please try it out, open issues and describe what's broken or missing.
