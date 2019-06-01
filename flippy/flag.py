@@ -29,10 +29,9 @@ class Flag:
         return self._get_first_rollout_value(request)
 
     def _type_error(self, actual_type_name: str, expected_type_name: str):
-        this_class_name = type(self).__name__
         this_method_name = inspect.stack()[1].function
         error = TypeError(
-            f"`{this_class_name}.{this_method_name}()` may only be called "
+            f"`{self.id}.{this_method_name}()` may only be called "
             f"with `{expected_type_name}` instances, not `{actual_type_name}`"
         )
         return error

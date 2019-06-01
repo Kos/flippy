@@ -89,7 +89,7 @@ def test_flag_disallows_calling_with_unrelated_type():
 
     with raises(
         TypeError,
-        match=r"`Flag\.get_state_for_request\(\)` may only be called with `HttpRequest` instances",
+        match=r"`hello\.get_state_for_request\(\)` may only be called with `HttpRequest` instances",
     ):
         f.get_state_for_request("hello")
 
@@ -117,7 +117,7 @@ def test_typed_flag_disallows_calling_with_unrelated_type(flag_type, arg_type):
 
     with raises(
         TypeError,
-        match=rf"`TypedFlag\.get_state_for_object\(\)` may only be called with `{flag_type.__name__}` instances",
+        match=rf"`hello\.get_state_for_object\(\)` may only be called with `{flag_type.__name__}` instances",
     ):
         f.get_state_for_object(obj)
 
