@@ -12,17 +12,27 @@ if chat_enabled:
     ...
 ```
 
-The flags are defined in code and enabled for specific groups of users via Django Admin.
+This lets you release your new feature to your users in a slow, controlled manner.
+
+The flags are defined in code with initial value, and later enabled via Django Admin for specific subgroups of users, with a good degree of flexibility.
+
+## Main selling point: Subject flexibility
+
+Flippy tries to assume as little as possible about the type of feature flags you write. This means you can do things like:
+
+- enable a feature for a percentage of IP addresses (anonymous visitors)
+- enable a feature for all (or a percentage of) users who have some property (admins, beta testers)
+- enable a feature for each user in 50% of registered accounts
+- enable a feature on 50% of pages (posts, documents...)
 
 ## Concepts
 
 - A **Flag** is a parameter that controls if a feature should be enabled for users. For example, if you're adding chat to your application, you can hide it behind a flag `enable_chat`.
-- **Rollout** is the process of enabling features for your users. For example, you might want to have `enable_chat` initially equal `False` for everyone, then enable it for a group of beta-testers, then if nothing explodes - roll it out to 25% of users, then 50% users and finally for everyone!
-- A **Subject** is an individual or a group that for whom you'd like to enable the feature flags. Depending on your case, you may want to enable a feature flag for...
-  - all users
-  - some percentage of users (progressive rollout)
-  - a percentage of anonymous visitors (based on their IP address)
-  - all users that fit some criteria (permissions, subscription plan...)
+- **Rollout** is the process of enabling features for your users. For example, you might want to have `enable_chat` initially equal `False` for everyone, then enable it for a group of beta-testers, then if nothing explodes - roll it out to 25% of users, then 50% users and finally for everyone! Each such action is considered a separate Rollout.  
+- A **Subject** a group that for whom you'd like to enable the feature flags. Typical use case is to enable flags for Users individually, but your app will have more concepts that would make good Subjects. For example:
+  - Users can be narrowed out by app-specific properties, like "subscription plan". "Free Trial Users" or "Premium Users" are good Subjects.
+  - If your app has multi-user accounts, then a whole Account can be a Subject as well.
+  - For an app that resembles Google Docs, you may choose to roll out a feature per-document rather than per-user. In this case, a document could become a Subject.
 
 ## Quick start
 
@@ -48,7 +58,7 @@ INSTALLED_APPS = [
 ```python
 from flippy import Flag
 
-flag_enable_chat = Flag(id="chat", name="Enable the chat feature")
+flag_enable_chat = Flag(id="chat", name="Chat Feature")
 ```
 
 5. Use the flag somewhere in your code:
@@ -62,9 +72,9 @@ def some_page(request):
 		...
 ```
 
-Now the flag is defined, but it will be always disabled.
+Now the flag is defined in code, but it will be always `False` because we haven't rolled the feature out yet.
 
-6. Visit the Django Admin in http://localhost:8000/admin/flippy/rollout/ and create a new rollout for this flag to enable it locally.
+6. Visit the Django Admin in http://localhost:8000/admin/flippy/rollout/ and create a new rollout for this flag to enable it.
 
 
 ## Writing flags
@@ -140,4 +150,4 @@ Of course you're not limited to users. If your application features multi-user A
 
 ## Status
 
-**Alpha**. You mileage may vary, things may and will break or change in future versions. I'm gathering feedback, so please try it out, open issues and describe what's broken or missing.
+**Alpha**. You mileage may vary, things may and will break. The API can change in future versions. I'm gathering feedback, so please try it out, open issues and describe what's broken or missing.
