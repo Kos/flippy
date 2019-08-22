@@ -60,15 +60,18 @@ class Rollout(models.Model):
         return str(self.subject_obj)
 
     @property
-    def flag_obj(self) -> Flag:
-        return [f for f in flag_registry if f.id == self.flag_id][0]
+    def _flag_obj(self) -> Optional[Flag]:
+        return next((f for f in flag_registry if f.id == self.flag_id), None)
 
     @property
     def flag_name(self):
-        return self.flag_obj.name
+        obj = self._flag_obj
+        return obj.name if obj else f"<missing flag: `{self.flag_id}`>"
 
     def clean(self):
-        flag = self.flag_obj
+        flag = self._flag_obj
+        if flag is None:
+            raise ValidationError(f"Flag `{self.flag_id}` does not exist")
         subject = self.subject_obj
         if not flag.accepts_subject(subject):
             message = f"Flag `{flag.name}` cannot be used with subject `{subject}`."
