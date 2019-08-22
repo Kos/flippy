@@ -1,11 +1,14 @@
 from datetime import datetime
-from typing import Optional
+from typing import Optional, Any
 
+from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
+from django.http import HttpRequest
 
-from flippy.flag import flag_registry
-from .subject import import_and_instantiate_subject, SubjectIdentifier
+from flippy import Flag
+from flippy.flag import flag_registry, TypedFlag
+from .subject import import_and_instantiate_subject, SubjectIdentifier, TypedSubject
 
 
 class Rollout(models.Model):
@@ -24,21 +27,25 @@ class Rollout(models.Model):
         assert 0 <= fraction <= 1
         return fraction
 
-    def get_flag_value_for_request(self, request) -> Optional[bool]:
+    def get_flag_value(self, obj: Any) -> Optional[bool]:
         """
         Returns the flag state assigned determined by this rollout to a given request.
 
         Returns None in case the request doesn't match the rollout's subject.
         """
-        identifier = self._build_identifier(request)
+        identifier = self._build_identifier(obj)
         if not identifier:
             return None
         score = identifier.get_flag_score(self.flag_id)
         return score < self.enable_fraction
 
-    def _build_identifier(self, request) -> Optional[SubjectIdentifier]:
+    def _build_identifier(self, obj: Any) -> Optional[SubjectIdentifier]:
         subject = self.subject_obj
-        subject_id = subject.get_identifier_for_request(request)
+        if isinstance(obj, HttpRequest):
+            subject_id = subject.get_identifier_for_request(obj)
+        else:
+            assert isinstance(subject, TypedSubject)  # TODO handle this gracefully
+            subject_id = subject.get_identifier_for_object(obj)
         if subject_id is None:
             return None
         return SubjectIdentifier(subject.subject_class, subject_id)
@@ -53,9 +60,18 @@ class Rollout(models.Model):
         return str(self.subject_obj)
 
     @property
-    def flag_obj(self):
+    def flag_obj(self) -> Flag:
         return [f for f in flag_registry if f.id == self.flag_id][0]
 
     @property
     def flag_name(self):
         return self.flag_obj.name
+
+    def clean(self):
+        flag = self.flag_obj
+        subject = self.subject_obj
+        if not flag.accepts_subject(subject):
+            message = f"Flag `{flag.name}` cannot be used with subject `{subject}`."
+            if isinstance(flag, TypedFlag):
+                message += f" It can only be used with subjects that support `{flag.expected_type.__name__}`."
+            raise ValidationError(message)

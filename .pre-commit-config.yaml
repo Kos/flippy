@@ -1,0 +1,15 @@
+repos:
+- repo: https://github.com/ambv/black
+  rev: 19.3b0
+  language_version: python3.6
+  hooks:
+  - id: black
+    exclude: >
+      (?x)(
+          /snapshots/snap_.*\.py$
+      ).*
+#
+#- repo: https://github.com/pre-commit/pre-commit-hooks
+#  rev: v2.1.0
+#  hooks:
+#  - id: flake8

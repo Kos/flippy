@@ -65,7 +65,7 @@ def test_get_installed_subjects(settings, names):
         (["flippy.subject.Subject"], "Can't instantiate abstract class"),
     ],
 )
-def test_get_installed_subjects(settings, names, match):
+def test_get_installed_subjects_error(settings, names, match):
     setattr(settings, "FLIPPY_SUBJECTS", names)
     with pytest.raises(ConfigurationError, match=match):
         Subject.get_installed_subjects()

@@ -1,9 +1,134 @@
 {% extends "base.html" %}
 {% block content %}
-<h1>Index page</h1>
-<h2>Flags</h2>
-<ul>
-  <li>Foo: {{ flag_foo }}</li>
-  <li>Bar: {{ flag_bar }}</li>
-</ul>
+  <h1>Index page</h1>
+
+  <p>This is a test site for Flippy feature flags. Try enabling some features by creating a new Rollout in <a
+      href="{% url 'admin:flippy_rollout_add' %}">Django Admin.</a></p>
+
+  <h2>Weather</h2>
+  {% if show_weather %}
+    <p>☀ The weather sure is nice today. ☀</p>
+  {% else %}
+    <p>(feature disabled)</p>
+  {% endif %}
+
+  <h2>Cats</h2>
+  {% if show_cat %}
+    <img src="https://www.catster.com/wp-content/uploads/2016/05/doctor-who-cat-.jpg" alt="Doctor Who petting a cat">
+  {% else %}
+    <p>(feature disabled)</p>
+  {% endif %}
+
+  <h2>Sudoku</h2>
+  {% if show_sudoku %}
+    <style>
+    .sudoku td {
+      border: 1px solid gray;
+      padding: .2em .5em;
+    }
+    </style>
+    <table class="sudoku">
+      <tr>
+        <td></td>
+        <td>4</td>
+        <td>2</td>
+        <td>6</td>
+        <td>7</td>
+        <td>1</td>
+        <td></td>
+        <td>8</td>
+        <td></td>
+      </tr>
+      <tr>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td>5</td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td></td>
+        <td>5</td>
+        <td>3</td>
+        <td></td>
+        <td></td>
+        <td>2</td>
+        <td></td>
+        <td></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td>4</td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td>6</td>
+        <td></td>
+      </tr>
+      <tr>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td>3</td>
+        <td>6</td>
+        <td></td>
+        <td></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td>1</td>
+        <td></td>
+        <td></td>
+        <td>5</td>
+        <td>2</td>
+        <td>8</td>
+        <td>4</td>
+        <td></td>
+        <td>7</td>
+      </tr>
+      <tr>
+        <td>6</td>
+        <td>7</td>
+        <td>1</td>
+        <td></td>
+        <td></td>
+        <td>4</td>
+        <td></td>
+        <td></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td>1</td>
+        <td>3</td>
+      </tr>
+      <tr>
+        <td></td>
+        <td></td>
+        <td>5</td>
+        <td></td>
+        <td>1</td>
+        <td>9</td>
+        <td></td>
+        <td></td>
+        <td></td>
+      </tr>
+    </table>
+  {% else %}
+    <p>(feature disabled)</p>
+  {% endif %}
 {% endblock %}
