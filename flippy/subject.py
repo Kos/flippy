@@ -1,7 +1,7 @@
 import hashlib
 import importlib
 from abc import ABC, abstractmethod
-from typing import Optional, Sequence, Generic, TypeVar, TYPE_CHECKING
+from typing import Optional, Sequence, Generic, Type, TypeVar, TYPE_CHECKING
 
 from dataclasses import dataclass
 from django.http import HttpRequest
@@ -58,7 +58,7 @@ class Subject(ABC):
         return results
 
     @property
-    def subject_class(self):
+    def subject_class(self) -> str:
         cls = type(self)
         return cls.__module__ + "." + cls.__name__
 
@@ -72,27 +72,32 @@ class TypedSubject(Subject, Generic[T]):
         ...
 
     @abstractmethod
-    def is_supported_type(self, type) -> bool:
+    def is_supported_type(self, type: type) -> bool:
         # TODO is it possible to make a generic implementation?
         ...
 
 
-def import_and_instantiate_subject(path):
+def import_and_instantiate_subject(path: str) -> Subject:
     module, _, name = path.rpartition(".")
     try:
         cls = getattr(importlib.import_module(module), name)
         if not issubclass(cls, Subject):
             raise TypeError(f"{cls} should be a subclass of Subject")
-        return cls()
+        instance = cls()
+        assert isinstance(instance, Subject)  # mypy
+        return instance
     except (AttributeError, TypeError, ModuleNotFoundError) as e:
         raise ConfigurationError(str(e)) from e
 
 
 class IpAddressSubject(Subject):
     def get_identifier_for_request(self, request: HttpRequest) -> Optional[str]:
-        return request.META.get("REMOTE_ADDR")
+        try:
+            return str(request.META["REMOTE_ADDR"])
+        except KeyError:
+            return None
 
-    def __str__(self):
+    def __str__(self) -> str:
         return "IP address"
 
 
@@ -104,10 +109,10 @@ class UserSubject(TypedSubject["AbstractUser"]):
     def get_identifier_for_object(self, user: "AbstractUser") -> Optional[str]:
         return str(user.pk)
 
-    def is_supported_type(self, type) -> bool:
+    def is_supported_type(self, type: type) -> bool:
         from django.contrib.auth.models import AbstractUser
 
         return issubclass(type, AbstractUser)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return "User"

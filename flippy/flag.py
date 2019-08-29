@@ -1,5 +1,5 @@
 import inspect
-from typing import TypeVar, Generic, TYPE_CHECKING, Any, Type
+from typing import TypeVar, Generic, TYPE_CHECKING, Any, Type, Optional, Iterable
 
 from django.http import HttpRequest
 from django.utils.functional import LazyObject
@@ -15,7 +15,7 @@ T = TypeVar("T")
 
 
 class Flag:
-    def __init__(self, id: str, name: str = None, default=False):
+    def __init__(self, id: str, name: Optional[str] = None, default: bool = False):
         self.id = id
         self.name = name or id.title()
         self.default = default
@@ -29,7 +29,7 @@ class Flag:
             )
         return self._get_first_rollout_value(request)
 
-    def _type_error(self, actual_type_name: str, expected_type_name: str):
+    def _type_error(self, actual_type_name: str, expected_type_name: str) -> Exception:
         this_method_name = inspect.stack()[1].function
         error = TypeError(
             f"`{self.id}.{this_method_name}()` may only be called "
@@ -42,9 +42,9 @@ class Flag:
         # -> don't import models at import time
         from .models import Rollout
 
-        matching_rollouts = Rollout.objects.filter(flag_id=self.id).order_by(
-            "-create_date"
-        )
+        matching_rollouts: Iterable[Rollout] = Rollout.objects.filter(
+            flag_id=self.id
+        ).order_by("-create_date")
 
         for rollout in matching_rollouts:
             maybe_value = rollout.get_flag_value(obj)
@@ -54,7 +54,7 @@ class Flag:
 
         return self.default
 
-    def accepts_subject(self, subject: Subject):
+    def accepts_subject(self, subject: Subject) -> bool:
         return True
 
 
@@ -72,13 +72,13 @@ class TypedFlag(Flag, Generic[T]):
 
         return self._get_first_rollout_value(obj)
 
-    def accepts_subject(self, subject: Subject):
+    def accepts_subject(self, subject: Subject) -> bool:
         return isinstance(subject, TypedSubject) and subject.is_supported_type(
             self.expected_type
         )
 
     @property
-    def expected_type(self) -> Type:
+    def expected_type(self) -> type:
         """
         Return the object type supported by this flag. This is the same type that is later expected in get_state_for_object().
         """

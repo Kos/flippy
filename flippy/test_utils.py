@@ -1,10 +1,13 @@
 from mockito import mock
 from django.http import HttpRequest
 
-from django.contrib.auth.models import User, AnonymousUser
+from django.contrib.auth.models import User, AbstractUser, AnonymousUser
+from typing import Optional, Any
 
 
-def request_factory(ip="10.1.2.3", user=None):
+def request_factory(
+    ip: str = "10.1.2.3", user: Optional[AbstractUser] = None
+) -> HttpRequest:
     if user is None:
         user = AnonymousUser()
     spec = {"META": {}, "user": user}
@@ -13,6 +16,6 @@ def request_factory(ip="10.1.2.3", user=None):
     return mock(spec, HttpRequest)
 
 
-def user_factory(pk):
+def user_factory(pk: Any) -> User:
     spec = {"pk": pk, "is_authenticated": True, "is_anonymous": False}
     return mock(spec, User)
